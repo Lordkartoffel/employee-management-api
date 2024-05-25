@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('employees', function (Blueprint $table) {
-            $table->id();
+            $table->id("employee_id")->autoIncrement();
             $table->string("name");
             $table->string("user_prefix");
             $table->string("first_name");
@@ -27,7 +27,7 @@ return new class extends Migration {
             $table->string("phone_no");
             $table->string("place_name");
             $table->string("county");
-            $table->string("county");
+            $table->string("city");
             $table->string("zip");
             $table->string("region");
             $table->timestamps();
