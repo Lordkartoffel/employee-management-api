@@ -3,7 +3,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\EmployeeImportController;
+use App\Http\Controllers\EmployeeController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +19,8 @@ use App\Http\Controllers\EmployeeImportController;
 
 // api that handles the csv import and CRUD
 Route::prefix('employees')->group(function () {
-    Route::post('/import/record', [EmployeeController::class, 'importRecord']);
-    Route::get('/', [EmployeeController::class, 'getEmployeeRecords']);
+    Route::post('/', [EmployeeController::class, 'importCSV']);
+    Route::get('/', [EmployeeController::class, 'getAllEmployee']);
+    Route::get('/{id}', 'EmployeeController@getSingleEmployee');
+    Route::delete('/{id}', 'EmployeeController@deleteSingleEmployee');
 });

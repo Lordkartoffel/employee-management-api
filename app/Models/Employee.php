@@ -15,19 +15,13 @@ class Employee extends Model
         'age'
     ];
 
-
-    public static function getAllEmployeeRecords()
+    public static function getSingleEmployeeRecords(int $id)
     {
-        return self::all()->OrderBy('id', 'DESC')->get();
+        return self::select('*')->where('id', $id)->get()->toJson();
     }
 
-    public static function getSingleEmployeeRecords()
+    public static function deleteEmployee(int $id)
     {
-        return self::all()->OrderBy('id', 'DESC')->get();
-    }
-
-    public static function deleteEmployee()
-    {
-        return self::all()->OrderBy('id', 'DESC')->get();
+        return self::where('id', $id)->delete();
     }
 }

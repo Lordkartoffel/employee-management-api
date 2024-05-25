@@ -4,32 +4,86 @@ namespace App\Http\Controllers;
 
 use Exception;
 use League\Csv\Reader;
+use App\Models\Employee;
 use League\Csv\Statement;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class EmployeeController extends Controller
 {
     public function importCSV(Request $request)
     {
-        if ($request->header('Content-Type') !== 'text/csv') {
-            return response()->json(['error' => 'Content-Type must be text/csv'], 400);
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:csv,txt',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
         }
 
-        try {
+        $path = $request->file('file')->store('temp');
+        $file = Storage::path($path);
 
-            $csvData = $request->getContent();
-            $csv = Reader::createFromString($csvData);
-            $csv->setHeaderOffset(0);
-
-
-            $records = (new Statement())->process($csv);
-
-
-            $data = iterator_to_array($records, true);
-
-            return response()->json(['message' => 'File successfully processed', 'data' => $data], 200);
-        } catch (Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+        $header = null;
+        $data = [];
+        if (($handle = fopen($file, 'r')) !== false) {
+            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
+                if (!$header) {
+                    $header = $row;
+                } else {
+                    $data[] = array_combine($header, $row);
+                }
+            }
+            fclose($handle);
         }
+
+        foreach ($data as $employeeData) {
+            Employee::create([
+                'name' => $employeeData['name'],
+                'user_prefix' => $employeeData['user_prefix'],
+                'first_name' => $employeeData['first_name'],
+                'middle_inital' => $employeeData['middle_inital'],
+                'last_name' => $employeeData['last_name'],
+                'gender' => $employeeData['gender'],
+                'email' => $employeeData['email'],
+                'date_of_birth' => $employeeData['date_of_birth'],
+                'time_of_birth' => $employeeData['time_of_birth'],
+                'age_in_years' => $employeeData['age_in_years'],
+                'date_of_joining' => $employeeData['date_of_joining'],
+                'age_in_company_years' => $employeeData['age_in_company_years'],
+                'phone_no' => $employeeData['phone_no'],
+                'place_name' => $employeeData['place_name'],
+                'county' => $employeeData['county'],
+                'city' => $employeeData['city'],
+                'zip' => $employeeData['zip'],
+                'region' => $employeeData['region'],
+            ]);
+        }
+
+        Storage::delete($path);
+
+        return response()->json(['message' => 'Employees imported successfully'], 200);
+    }
+
+
+    //select all Employee
+    public function getAllEmployee()
+    {
+        return response()->json(Employee::all()->toJson());
+    }
+
+    //get single Employee
+    public function getSingleEmployee(int $id)
+    {
+        return response()->json(Employee::getSingleEmployeeRecords($id));
+    }
+
+
+    //deletes a single Employee
+    public function deleteSingleEmployee(int $id)
+    {
+        return Employee::deleteEmployee($id);
     }
 }
+
